@@ -1,6 +1,7 @@
 import json
 import visual
 import sys
+import re
 
 def find_response(args, response) :
     retour = {}
@@ -17,3 +18,7 @@ def find_response(args, response) :
         if word in response.headers :
             retour["headers"].append(word)
     return retour
+
+def search_url(text) : 
+    urls = re.findall(r'(?<=href=")([^"]+)(?=")', text)
+    return urls

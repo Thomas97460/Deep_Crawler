@@ -14,6 +14,7 @@ def add_arguments() :
     parser.add_argument('-f', '--find', dest='find', required=False, help='look for keywords in respone (-find \'[\'word1\',\'word2\']\')')
     parser.add_argument('-s', '--silent', dest='silent', required=False, action='store_true', help='silent mode, only print the output')
     parser.add_argument('-i', '--intelligent', dest='intelligent', required=False, action='store_true', help='Will search for url of the same domain in the response and searching on it')
+    parser.add_argument('-slow', '--slow', dest='slow', type=float, required=False, help='time to sleep beetwen two requests')
     return parser
 
 def error_args(parser, args) :
