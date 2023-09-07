@@ -5,7 +5,6 @@ def add_arguments() :
     parser.add_argument('-u', '--url', dest='url', required=True, help='target url')
     parser.add_argument('-w', '--wordlist', dest='wordlist', required=False, help='wordlist of files that will be searched')
     parser.add_argument('-o', '--output', dest='output', required=False, help='file.txt where output is dump')
-    parser.add_argument('-d', '--deep', dest='deep', required=False, action='store_true', help='searching for urls in response')
     parser.add_argument('-l', '--level', dest='level', type=int, required=False, help='level of folder searching')
     parser.add_argument('-headers', '--headers', dest='headers', required=False, help='optional http headers on json tab format')
     parser.add_argument('-c', '--cookies', dest='cookies', required=False, help='optionnal http cookies on json tab format')

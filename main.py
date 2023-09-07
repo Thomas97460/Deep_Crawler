@@ -94,21 +94,6 @@ def send_url(args, origin_url, words) :
     print(str(nb_request) + " requests sent")
     return {"retour":retour, "nb_request":nb_request}
 
-def deep(args, urls, words, sent_urls) :
-    retour = {}
-    retour["sent"] = []
-    retour["ok"] = {}
-    retour["url"] = {}
-    for url in urls :
-        if not re.search(r"\.[a-zA-Z0-9]+$", url) and url != args.url and url not in sent_urls :
-            print("+ STARTING NEW FUZZING ON " + url)
-            sent = send_url(args, url, words)
-            retour["sent"].append(url)
-            retour["ok"].update(sent["retour"]["ok"])
-            retour["url"].update(sent["retour"]["url"])
-            retour[url] = sent["retour"]
-    return retour
-
 def intelligent(args, urls, sent_urls, words) :
     stack_urls = urls
     print("+ STARTING INTELLIGENT SCAN OF RESPONSE")
@@ -132,22 +117,22 @@ def intelligent(args, urls, sent_urls, words) :
 def directory(args) :
     print("\n")
     print(visual.title("START DIRECTORY FUZZING"))
-    if args.silent :
-        print("Execution of wordlist")
-    words = get_words(args)
-    url_sent = send_url(args, args.url, words)
-    retour = url_sent["retour"]
-    sent_urls = retour["sent"]
-    if args.deep :
-        retour["deep"] = deep(args, retour["ok"], words, sent_urls)
-        sent_urls.append(retour["deep"]["sent"])
-        retour["ok"].update(retour["deep"]["ok"])
-        retour["url"].update(retour["deep"]["url"])
+    if args.wordlist is not None :
+        if not args.silent :
+            print("Execution of wordlist")
+        words = get_words(args)
+        url_sent = send_url(args, args.url, words)
+        retour = url_sent["retour"]
+        sent_urls = retour["sent"]
+    else :
+        sent_urls = []
+        words = None
+        retour["ok"] = None
     if args.intelligent :
         retour["intelligent"] = intelligent(args, retour["ok"], sent_urls, words)
         retour["ok"].update(retour["intelligent"]["ok"])
         retour["url"].update(retour["intelligent"]["url"])
-        print(visual.title("END DIRECTORY FUZZING"))
+    print(visual.title("END DIRECTORY FUZZING"))
     return retour
         
 
