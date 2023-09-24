@@ -20,7 +20,11 @@ def get_headers_dict(args) :
 
 def set_headers_http(args) :
     if args.headers is not None :
-        headers = get_headers_dict(args)
+        try : 
+            cookies = json.loads(args.headers)
+        except Exception as e :
+            print(visual.error("COOKIES HTTP : " + str(e)))
+            sys.exit()
     else :
         headers = {}
     if args.cookies is not None :

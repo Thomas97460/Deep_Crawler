@@ -3,10 +3,8 @@ import arg_parser
 import requestor
 import searcher
 import sys
-import re
 import time
 import json
-import requests
 
 def get_words(args) :
     try :
@@ -60,7 +58,7 @@ def prepare_url(origin, suffix) :
     if suffix.startswith(origin) :
         new_url = suffix
     elif suffix.startswith("https://") or suffix.startswith("http://") :
-        new_url = suffix
+        return None
     elif len(suffix) == 0 or (len(suffix) > 0 and (suffix[0] == "/" or origin[-1] == "/"))  :
         if origin.endswith("index.php") :
             origin = origin[:-9]
@@ -85,25 +83,26 @@ def send_url(args, origin_url, words) :
             time.sleep(float(args.slow))
         nb_request += 1
         current_url = prepare_url(origin_url, word)
-        response = requestor.send(args, current_url)
-        retour["sent"].append(current_url)
-        if args.silent is False :
-            if response.status_code >= 400 :
-                print("[" + visual.red(str(response.status_code)) + "] " + current_url)
+        if current_url is not None :
+            response = requestor.send(args, current_url)
+            retour["sent"].append(current_url)
+            if args.silent is False :
+                if response.status_code >= 400 :
+                    print("[" + visual.red(str(response.status_code)) + "] " + current_url)
+                else :
+                    print("[" + visual.green(str(response.status_code)) + "] " + current_url)
             else :
-                print("[" + visual.green(str(response.status_code)) + "] " + current_url)
-        else :
-            if nb_request % 100 == 0 :
-                print(str(nb_request) + " requests sent")
-        if response.status_code < 400 : 
-            retour["ok"][current_url] = response
-        retour["url"][current_url] = {} 
-        retour["url"][current_url]["code"] = response.status_code
-        if args.find is not None :
-            found = searcher.find_response(args, response)
-            retour["url"][current_url]["find"] = print_found(found)
-        else :
-            retour["url"][current_url]["find"] = {}
+                if nb_request % 100 == 0 :
+                    print(str(nb_request) + " requests sent")
+            if response.status_code < 400 : 
+                retour["ok"][current_url] = response
+            retour["url"][current_url] = {} 
+            retour["url"][current_url]["code"] = response.status_code
+            if args.find is not None :
+                found = searcher.find_response(args, response)
+                retour["url"][current_url]["find"] = print_found(found)
+            else :
+                retour["url"][current_url]["find"] = {}
     # print(str(nb_request) + " requests sent")
     return {"retour":retour, "nb_request":nb_request}
 
@@ -125,7 +124,7 @@ def intelligent(args, sent_urls, words) :
         if new_urls :
             for new_suffix in new_urls :
                 new_url = prepare_url(args.url, new_suffix)
-                if new_url not in sent_urls :
+                if new_url not in sent_urls and new_url is not None :
                     current_retour = send_url(args, new_url, [""] + words)["retour"]
                     retour["ok"].update(current_retour["ok"])
                     retour["url"].update(current_retour["url"])
