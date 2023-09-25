@@ -55,10 +55,27 @@ def print_retour_directory(args, retour):
     print("\n")
 
 def prepare_url(origin, suffix) :
+    if origin.startswith("https://") :
+        origin_wo_http = origin[:8]
+        index_fin_origin = origin_wo_http.find("/") + 8 + 1
+    elif origin.startswith("http://") :
+        origin_wo_http = origin[:7]
+        index_fin_origin = origin_wo_http.find("/") + 7 + 1
+    if index_fin_origin == -1 :
+        index_fin_origin = len(origin)
     if suffix.startswith(origin) :
         new_url = suffix
     elif suffix.startswith("https://") or suffix.startswith("http://") :
-        return None
+        if suffix.startswith("https://") :
+            suffix_wo_http = suffix[8:]
+        elif suffix.startswith("http://") :
+            suffix_wo_http = suffix[7:]
+        if suffix_wo_http.startswith("www.") :
+            suffix_wo_http = suffix_wo_http[4:]
+        if ("http://"+suffix_wo_http).startswith(origin[:index_fin_origin]) or ("https://"+suffix_wo_http).startswith(origin[:index_fin_origin]):
+            new_url = suffix
+        else :
+            new_url = None 
     elif len(suffix) == 0 or (len(suffix) > 0 and (suffix[0] == "/" or origin[-1] == "/"))  :
         if origin.endswith("index.php") :
             origin = origin[:-9]
@@ -77,7 +94,6 @@ def send_url(args, origin_url, words) :
     retour["ok"] = {}
     retour["sent"] = []
     current_url = origin_url
-    # print("Fuzzing on " + origin_url)
     for word in words :
         if args.slow is not None :
             time.sleep(float(args.slow))
@@ -103,7 +119,6 @@ def send_url(args, origin_url, words) :
                 retour["url"][current_url]["find"] = print_found(found)
             else :
                 retour["url"][current_url]["find"] = {}
-    # print(str(nb_request) + " requests sent")
     return {"retour":retour, "nb_request":nb_request}
 
 def intelligent(args, sent_urls, words) :
@@ -116,10 +131,12 @@ def intelligent(args, sent_urls, words) :
     current_retour = send_url(args, args.url, [""])["retour"]
     retour["ok"].update(current_retour["ok"])
     retour["url"].update(current_retour["url"])
-    stack_urls.append(current_retour["ok"])
+    if len(current_retour["ok"]) > 0 :
+        stack_urls.append(current_retour["ok"])
     sent_urls.append(args.url)
     while stack_urls :
         response = stack_urls.pop()
+        # print(response[next(iter(response))].text)
         new_urls = searcher.search_url(response[next(iter(response))].text)
         if new_urls :
             for new_suffix in new_urls :
