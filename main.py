@@ -5,6 +5,7 @@ import searcher
 import sys
 import time
 import json
+import datetime
 
 def get_words(args) :
     try :
@@ -38,21 +39,50 @@ def print_found(found) :
     return retour
 
 def print_retour_directory(args, retour):
-    print("Output of " + retour["title"])
-    print("GREEN CODE :")
+    print(visual.yellow("OUTPUT OF DIRECTORY CRAWLING"))
+    green_code = []
+    red_code = []
     for key, value in retour["url"].items():
         if value["code"] < 400 :
-            print("[" + visual.green(str(value["code"])) + "] " + key)
-            if args.find is not None :
-                if value["find"]["body"] is not None :
-                    for found in value["find"]["body"] :
-                        print("\t " + visual.blue("Found : ") + found)
-    print("\n")
-    print("RED CODE :")
+            green_code.append((key,value))
     for key, value in retour["url"].items():
         if value["code"] >= 400 :
-            print("[" + visual.red(str(value["code"])) + "] " + key)
+            red_code.append((key,value))
+    if len(green_code) == 0 :
+        print(visual.green("No requests with code < 400"))
+    else :
+        print(visual.green("GREEN CODE:"))
+        for value in green_code :
+            print("[" + visual.green(str(value[1]["code"])) + "] " + value[0])
+            if args.find is not None :
+                if value[1]["find"]["body"] is not None :
+                    for found in value[1]["find"]["body"] :
+                        print("\t " + visual.blue("Found : ") + found)
     print("\n")
+    if len(red_code) == 0 :
+        print(visual.green("No requests with code >= 400"))
+    else :
+        print(visual.red("RED CODE:"))
+        for value in red_code :
+            print("[" + visual.red(str(value[1]["code"])) + "] " + value[0])
+            if args.find is not None :
+                if value[1]["find"]["body"] is not None :
+                    for found in value[1]["find"]["body"] :
+                        print("\t " + visual.blue("Found : ") + found)
+    # print("GREEN CODE :")
+    # for key, value in retour["url"].items():
+    #     if value["code"] < 400 :
+    #         print("[" + visual.green(str(value["code"])) + "] " + key)
+    #         if args.find is not None :
+    #             if value["find"]["body"] is not None :
+    #                 for found in value["find"]["body"] :
+    #                     print("\t " + visual.blue("Found : ") + found)
+    # print("\n")
+    # print("RED CODE :")
+    # for key, value in retour["url"].items():
+    #     if value["code"] >= 400 :
+    #         print("[" + visual.red(str(value["code"])) + "] " + key)
+    # print("\n")
 
 def prepare_url(origin, suffix) :
     if origin.startswith("https://") :
@@ -103,10 +133,11 @@ def send_url(args, origin_url, words) :
             response = requestor.send(args, current_url)
             retour["sent"].append(current_url)
             if args.silent is False :
+                heure_actuelle = datetime.datetime.now().time()
                 if response.status_code >= 400 :
-                    print("[" + visual.red(str(response.status_code)) + "] " + current_url)
+                    print("[" + visual.blue(heure_actuelle.strftime('%H:%M:%S'))+"] " + "[" + visual.red(str(response.status_code)) + "] " + current_url)
                 else :
-                    print("[" + visual.green(str(response.status_code)) + "] " + current_url)
+                    print("[" + visual.blue(heure_actuelle.strftime('%H:%M:%S'))+"] " + "[" + visual.green(str(response.status_code)) + "] " + current_url)
             else :
                 if nb_request % 100 == 0 :
                     print(str(nb_request) + " requests sent")
@@ -123,8 +154,8 @@ def send_url(args, origin_url, words) :
 
 def intelligent(args, sent_urls, words) :
     stack_urls = []
-    if not args.silent : 
-        print("+ STARTING INTELLIGENT SCAN OF RESPONSE")
+    # if not args.silent : 
+    #     print("+ STARTING INTELLIGENT SCAN OF RESPONSE")
     retour = {}
     retour["ok"] = {}
     retour["url"] = {}
@@ -151,7 +182,7 @@ def intelligent(args, sent_urls, words) :
     return retour
 
 def directory(args) :
-    print(visual.title("START DIRECTORY FUZZING"))
+    print(visual.yellow(visual.title("START DIRECTORY CRAWLING")))
     if args.wordlist is not None :
         if not args.silent :
             print("Execution of wordlist")
@@ -163,7 +194,7 @@ def directory(args) :
         retour = {}
         retour["url"] = {}
         retour["intelligent"] = {}
-        retour["title"] = "Directory Fuzzing"
+        retour["title"] = "Directory Crawling"
         sent_urls = []
         words = []
         retour["ok"] = {}
@@ -171,7 +202,7 @@ def directory(args) :
         retour["intelligent"] = intelligent(args, sent_urls, words)
         retour["ok"].update(retour["intelligent"]["ok"])
         retour["url"].update(retour["intelligent"]["url"])
-    print(visual.title("END DIRECTORY FUZZING"))
+    print(visual.yellow(visual.title("END DIRECTORY CRAWLING")))
     return retour
 
 def process_retour(retour) :

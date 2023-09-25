@@ -8,7 +8,7 @@ def add_arguments() :
     parser.add_argument('-headers', '--headers', dest='headers', required=False, help='optional http headers on json tab format')
     parser.add_argument('-c', '--cookies', dest='cookies', required=False, help='optionnal http cookies on json tab format')
     parser.add_argument('-data', '--data', dest='data', required=False, help='optional http data on json list format')
-    parser.add_argument('-p', '--post', dest='post', required=False, help='post request (get by default)')
+    parser.add_argument('-p', '--post', dest='post', required=False, action='store_true', help='post request (get by default)')
     parser.add_argument('-f', '--find', dest='find', required=False, help='look for keywords in respone (-find \'[\'word1\',\'word2\']\')')
     parser.add_argument('-s', '--silent', dest='silent', required=False, action='store_true', help='silent mode, only print the output')
     parser.add_argument('-i', '--intelligent', dest='intelligent', required=False, action='store_true', help='Will search for url of the same domain in the response and searching on it')
